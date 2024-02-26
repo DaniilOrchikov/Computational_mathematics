@@ -45,7 +45,8 @@
         <div>
             <label>
                 Загрузить данные из файла
-                <input type="file" id="fileInput" style="width: max-content; color: rgba(0, 0, 0, 0); margin: 5px" accept=".txt">
+                <input type="file" id="fileInput" style="width: max-content; color: rgba(0, 0, 0, 0); margin: 5px"
+                       accept=".txt">
             </label><br>
             <label>
                 Размер матрицы
@@ -67,7 +68,9 @@
             <input type="button" value="Рассчитать" onclick="calc()" style="min-width: min-content">
         </div>
     </div>
-    <div>
+    <a href="https://github.com/DaniilOrchikov/Computational_mathematics/tree/master/laba1" target="_blank"
+       style="text-align: center">GitHub</a>
+    <div style="margin-left: auto; text-align: right">
         <input type="button" value="Очистить" onclick="createNewMatrix()" style="min-width: min-content">
         <br>
         <input type="button" value="Генерировать матрицу с диагональным преобладанием" onclick="generateMatrix(true)"
@@ -99,13 +102,13 @@
         createNewMatrix()
     })
 
-    document.getElementById('fileInput').addEventListener('change', function(event) {
+    document.getElementById('fileInput').addEventListener('change', function (event) {
         const reader = new FileReader();
         reader.readAsText(event.target.files[0]);
-        reader.onload = function() {
+        reader.onload = function () {
             handleFileText(reader.result);
         };
-        reader.onerror = function() {
+        reader.onerror = function () {
             console.error('Ошибка при чтении файла', reader.error);
         };
         document.getElementById('fileInput').value = ""
@@ -124,11 +127,11 @@
         document.getElementById("init_approx").innerHTML = m
         matrix = []
         right_parts = []
-        for (let i = 0; i < n; i ++){
+        for (let i = 0; i < n; i++) {
             let t = text[i + 4].split(" ")
             right_parts.push(t.pop())
             matrix.push([])
-            for (let j = 0 ; j < n; j ++)
+            for (let j = 0; j < n; j++)
                 matrix[i].push(Number.parseFloat(t[j]))
         }
         printMatrix()
@@ -213,7 +216,7 @@
         readMatrix()
         let variable_matrix = []
         let variable_right_parts = []
-        for (let i = 0 ; i < n; i ++){
+        for (let i = 0; i < n; i++) {
             variable_matrix.push([...matrix[i]])
         }
         variable_right_parts.push(...right_parts)
@@ -332,7 +335,17 @@
             m += `${x_n[i] - x_n1[i]}`
             if (i + 1 < n) m += ", "
         }
-        m += "]"
+        m += "]<br><br>"
+        m += "Проверка:<br>"
+        for (let i = 0; i < n; i++) {
+            let s = 0
+            for (let j = 0; j < n; j++) {
+                m += Math.abs(matrix[i][j] * x_n1[j])
+                s += matrix[i][j] * x_n1[j]
+                if (j + 1 < n) m += matrix[i][j] * x_n1[j] > 0 ? " + " : " - "
+            }
+            m += " = " + s + "<br>"
+        }
         document.getElementById("answer").innerHTML += m
     }
 
@@ -353,12 +366,12 @@
             matrix[ind2] = [matrix[ind1], matrix[ind1] = matrix[ind2]][0]
         }
         right_parts = []
-        for (let i = 0; i < n; i++) right_parts.push(Math.floor(Math.random() * 10) - 5)
+        for (let i = 0; i < n; i++) right_parts.push(Math.floor(Math.random() * 90) - 45)
 
         printMatrix()
     }
 
-    function generateLectureMatrix(){
+    function generateLectureMatrix() {
         matrix = [[2, 2, 10], [10, 1, 1], [2, 10, 1]]
         document.getElementById("size").value = 3
         document.getElementById("accuracy").value = 0.01
