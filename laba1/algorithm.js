@@ -1,5 +1,5 @@
 function checkDiagonalDominance(matrix) {
-    // Смотрим в каждой ли строке есть элемент модуль которого больше суммы моделей остальных элементов в строке
+    // Смотрим в каждой ли строке есть элемент модуль которого больше суммы модулей остальных элементов в строке
     // Также смотрим возможно ли будет переставить строки так что эти элементы встанут на диагональ
     let f = new Array(n).fill(0);
     for (let i = 0; i < n; i++) {
@@ -55,6 +55,7 @@ function calc() {
         }
         // -----
     } else {
+        // Добиваемся диагонального преобладания переставляя строки
         for (let i = 0; i < n; i++) {
             let max_value = 0
             let ind = -1
@@ -64,7 +65,7 @@ function calc() {
                     ind = j
                 }
             }
-            // переставляем строку так чтобы максимальный элемент в ней встал на диагональ
+            // переставляем строку так, чтобы максимальный элемент в ней встал на диагональ
             if (ind !== -1) {
                 variable_matrix[i] = [variable_matrix[ind], variable_matrix[ind] = variable_matrix[i]][0]
                 variable_right_parts[i] = [variable_right_parts[ind], variable_right_parts[ind] = variable_right_parts[i]][0]
@@ -98,7 +99,7 @@ function calc() {
     // Итерационно вычисляем значения
     let x_n = []
     document.getElementById("init_approx").querySelectorAll("*").forEach(input => {
-        x_n.push(parseInt(input.value, 10))
+        x_n.push(parseInt(input.value, 10)) // считываем начальные аппроксимации
     })
     let x_n1 = new Array(n)
 
@@ -114,14 +115,14 @@ function calc() {
             x_n1[i] = a
         }
         let max_deviation = 0
-        for (let i = 0; i < n; i++) {
+        for (let i = 0; i < n; i++) { // вычисляем максимальную погрешность
             if (Math.abs(x_n[i] - x_n1[i]) > max_deviation)
                 max_deviation = Math.abs(x_n[i] - x_n1[i])
         }
-        if (max_deviation < document.getElementById("accuracy").value)
+        if (max_deviation < document.getElementById("accuracy").value) // если достигнута нужная точность - выходим из цикла
             break
         document.getElementById("answer").innerHTML = ""
-        if (v >= document.getElementById("maximum_number_of_iterations").value) {
+        if (v >= document.getElementById("maximum_number_of_iterations").value) { // если достигнуто максимально количество итераций - выходим из цикла
             document.getElementById("answer").innerHTML = "Не удалось достигнуть требуемой точности за отведенное количество итераций<br>"
             break
         }
