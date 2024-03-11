@@ -6,7 +6,7 @@ function checkDiagonalDominance(matrix) {
         let max_value = 0
         let ind = -1
         for (let j = 0; j < n; j++) {
-            if (Math.abs(matrix[i][j]) > max_value) {
+            if (Math.abs(matrix[i][j]) >= max_value) {
                 max_value = Math.abs(matrix[i][j])
                 ind = j
             }

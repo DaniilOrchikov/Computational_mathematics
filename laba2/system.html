@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8">
+    <script src="https://www.desmos.com/api/v1.8/calculator.js?apiKey=dcb31709b452b1cf9dc26972add0fda6"></script>
+    <title>Уравнения</title>
+    <style>
+        * {
+            font-size: 1.1rem;
+            margin: 3px;
+        }
+
+        .interval {
+            width: 80px;
+        }
+
+        #res {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        #res th, #res td {
+            border: 1px solid black;
+            width: 150px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+<input type="radio" id="1" name="system" value="cosx^4" onclick="drawChart(this.value)">
+<label for="1">{x ^ 2 + cos(y) = 1; y = x ^ 4}</label><br>
+<input type="radio" id="2" name="system" value="box&cos" onclick="drawChart(this.value)">
+<label for="2">{y = cos(x) - x; (x + 1) ^ 2 + y ^ 10 = 3)}</label><br>
+<!--<input type="radio" id="3" name="system" value="omg" onclick="drawChart(this.value)">-->
+<!--<label for="3">{cos(4 * (x * cos(6.8) - y * sin(6.8)) * x * sin(6.8) - 4y * cos(6.8)) = x * cos(6.8) - y * sin(6.8); x + y = xy}</label><br>-->
+<input type="radio" id="4" name="system" value="loops" onclick="drawChart(this.value)">
+<label for="4">{x ^ 3 + y ^ 2 = 4; xy = cos(x)}</label><br>
+<input type="radio" id="5" name="system" value="waves" onclick="drawChart(this.value)">
+<label for="5">{cos(x * cos(1) + y * sin(1)) = y * cos(1); sinh(3x) = cosh(y * sinh(x)) - sin(8x)}</label><br>
+
+<div>Точность: <input id="accuracy" type="number" value="0.001"></div>
+Введите начальные приближения: {<input id='x' type='number' class='interval' value="0" autocomplete="off">; <input
+        id='y' type='number' class='interval' value="0" autocomplete="off">}
+<div id="options"></div>
+<div id="calculator" style="width: 90%; height: 600px; margin-left: 4%"></div>
+<div id="info"></div>
+<table id="res" style="margin-top: 15px">
+</table>
+<div id="check"></div>
+
+<script>
+    let elt = document.getElementById('calculator')
+    let calculator = Desmos.GraphingCalculator(elt)
+    calculator.setExpression({id: 'functions', hidden: true});
+
+    functions = {
+        "none": {
+            "function1": (x, y) => {
+            },
+            "stringFunction1": "",
+            "function2": (x, y) => {
+            },
+            "stringFunction2": "",
+        },
+        "cosx^4": {
+            "stringFunction1": "x^2+\\cos(y)=1",
+            "function1": (x, y) => {
+                return x * x + Math.cos(y) - 1
+            },
+            "derivative1X": (x, y) => {
+                return 2 * x
+            },
+            "derivative1Y": (x, y) => {
+                return -Math.sin(y)
+            },
+            "stringFunction2": "x^4=y",
+            "function2": (x, y) => {
+                return Math.pow(x, 4) - y
+            },
+            "derivative2X": (x, y) => {
+                return 4 * Math.pow(x, 3)
+            },
+            "derivative2Y": (x, y) => {
+                return -1
+            }
+        }, "box&cos": {
+            "stringFunction1": "y=\\cos(x)-x",
+            "function1": (x, y) => {
+                return Math.cos(x) - x - y
+            },
+            "derivative1X": (x, y) => {
+                return -Math.sin(x) - 1
+            },
+            "derivative1Y": (x, y) => {
+                return -1
+            },
+            "stringFunction2": "(x+1)^2+y^{10}=3",
+            "function2": (x, y) => {
+                return (x + 1) * (x + 1) + Math.pow(y, 10) - 3
+            },
+            "derivative2X": (x, y) => {
+                return 2 * (x + 1)
+            },
+            "derivative2Y": (x, y) => {
+                return 10 * Math.pow(y, 9)
+            }
+        }, "omg": {
+            "stringFunction1": "\\cos\\left(4\\left(x\\cdot\\cos(6.8)-y\\cdot\\sin(6.8)\\right)x\\sin\\left(6.8\\right)-4y\\cos\\left(6.8\\right)\\right)=x\\cdot\\cos(6.8)-y\\cdot\\sin(6.8)",
+            "function1": (x, y) => {
+                return (Math.cos(4 * Math.sin(34 / 5) * x * (Math.cos(34 / 5) * x - y * Math.sin(34 / 5)) - 4 * y * Math.cos(34 / 5)) - (Math.cos(34 / 5) * x - y * Math.sin(34 / 5)))
+            },
+            "derivative1X": (x, y) => {
+                return 4 * y * Math.pow(Math.sin(34 / 5), 2) * Math.sin(4 * Math.cos(34 / 5) * Math.sin(34 / 5) * x ^ 2 - 4 * y * Math.pow(Math.sin(34 / 5), 2) * x - 4 * y * Math.cos(34 / 5)) - 8 * Math.cos(34 / 5) * Math.sin(34 / 5) * x * Math.sin(4 * Math.cos(34 / 5) * Math.sin(34 / 5) * x ^ 2 - 4 * y * Math.pow(Math.sin(34 / 5), 2) * x - 4 * y * Math.cos(34 / 5)) - Math.cos(34 / 5)
+            },
+            "derivative1Y": (x, y) => {
+                return (4 * x * Math.pow(Math.sin(34 / 5), 2) + 4 * Math.cos(34 / 5)) * Math.sin((-4 * x * Math.pow(Math.sin(34 / 5), 2) - 4 * Math.cos(34 / 5)) * y + 4 * x ^ 2 * Math.cos(34 / 5) * Math.sin(34 / 5)) + Math.sin(34 / 5)
+            },
+            "stringFunction2": "x+y=xy",
+            "function2": (x, y) => {
+                return x + y - x * y
+            },
+            "derivative2X": (x, y) => {
+                return 1 - y
+            },
+            "derivative2Y": (x, y) => {
+                return 1 - x
+            }
+        }, "loops": {
+            "stringFunction1": "x^{3}+y^{2}=4",
+            "function1": (x, y) => {
+                return Math.pow(x, 3) + y * y - 4
+            },
+            "derivative1X": (x, y) => {
+                return 3 * x * x
+            },
+            "derivative1Y": (x, y) => {
+                return 2 * y
+            },
+            "stringFunction2": "xy=\\cos\\left(x\\right)",
+            "function2": (x, y) => {
+                return x * y - Math.cos(x)
+            },
+            "derivative2X": (x, y) => {
+                return Math.sin(x) + y
+            },
+            "derivative2Y": (x, y) => {
+                return x
+            }
+        }, "waves": {
+            "stringFunction1": "\\cos(x\\cos(1)+y\\sin(1))=y\\cos(1)",
+            "function1": (x, y) => {
+                return Math.cos(x * Math.cos(1) + y * Math.sin(1)) - y * Math.cos(1)
+            },
+            "derivative1X": (x, y) => {
+                return -Math.cos(1) * Math.sin(Math.cos(1) * x + y * Math.sin(1))
+            },
+            "derivative1Y": (x, y) => {
+                return -Math.sin(1) * Math.sin(Math.sin(1) * y + x * Math.cos(1)) - Math.cos(1)
+            },
+            "stringFunction2": "\\sinh\\left(3x\\right)=\\cosh\\left(y\\sinh x\\right)-\\sin\\left(8x\\right)",
+            "function2": (x, y) => {
+                return Math.sinh(3 * x) - Math.cosh(y * Math.sinh(x)) + Math.sin(8 * x)
+            },
+            "derivative2X": (x, y) => {
+                return 3 * Math.cosh(3 * x) - (y * Math.cosh(x) * Math.sinh(y * Math.sinh(x)) - 8 * Math.cos(8 * x))
+            },
+            "derivative2Y": (x, y) => {
+                return -(Math.sinh(x) * Math.sinh(Math.sinh(x) * y))
+            }
+        },
+    }
+    let f = functions["none"]
+
+    function calculate() {
+        let x0 = document.getElementById("x").value * 1
+        let y0 = document.getElementById("y").value * 1
+        let accuracy = document.getElementById("accuracy").value
+
+        systemNewtonMethod(x0, y0, accuracy)
+    }
+
+
+    function drawChart(name) {
+        f = functions[name]
+        document.getElementById("options").innerHTML = "<button onclick='calculate()'>Рассчитать</button>"
+        document.getElementById("info").innerHTML = ""
+        document.getElementById("res").innerHTML = ""
+        document.getElementById("check").innerHTML = ""
+        calculator.setExpression({id: 'graph1', latex: f["stringFunction1"]});
+        calculator.setExpression({id: 'graph2', latex: f["stringFunction2"]});
+    }
+</script>
+<script type="text/javascript" src="methods.js"></script>
+</body>
+</html>

@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8">
+    <link href="//cdn.jsdelivr.net/chartist.js/latest/chartist.min.css" rel="stylesheet">
+    <title>Уравнения</title>
+    <style>
+        * {
+            font-size: 1.1rem;
+            margin: 3px;
+        }
+
+        /* Увеличение размера шрифта для подписей на осях */
+        .ct-label {
+            font-size: 1.5rem;
+        }
+
+        /* Выделение осей жирными линиями */
+        .ct-grid.ct-horizontal,
+        .ct-grid.ct-vertical {
+            stroke: #333;
+            stroke-width: 2px;
+        }
+
+        .ct-series-a .ct-line, .ct-series-b .ct-line {
+            stroke: black;
+        }
+
+        .ct-series-d .ct-line {
+            stroke: red;
+        }
+
+        .ct-series-e .ct-line {
+            stroke: green;
+        }
+
+        .interval {
+            width: 80px;
+        }
+
+        #res {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        #res th, #res td {
+            border: 1px solid black;
+            width: 150px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+<select name="charts" id="chart-select" onchange="start(this.value)">
+    <option value="none">--Выберете график--</option>
+    <option value="ridge">x^3 - 3.125x^2 - 3.5x + 2.458</option>
+    <option value="sin">2x * sin(2) + sin(x * cos(2)) - cos(x * cos(2) - 6sin(x * sin(2)))</option>
+    <option value="cos">cos(x) * x + 1</option>
+    <option value="cossin">3 * cos(2 * x) + 4 * sin(x) - 2 * cos(8 * x) + 0.5 * cos(x)</option>
+</select>
+<select name="charts" id="method-select">
+    <option value="">--Выберете метод--</option>
+    <option value="1">Метод хорд</option>
+    <option value="2">Метод Ньютона</option>
+    <option value="3">Метод простой итерации</option>
+</select>
+<div>Точность: <input id="accuracy" type="number" value="0.001"></div>
+<div id="options"></div>
+<div id="chart" class="ct-chart ct-major-tenth" style="margin-top: 20px"></div>
+<div id="info"></div>
+<table id="res" style="margin-top: 15px">
+</table>
+
+<script src="//cdn.jsdelivr.net/chartist.js/latest/chartist.min.js"></script>
+<script>
+    functions = {
+        "none": {
+            "function": (x) => {
+            },
+            "derivative": (x) => {
+            },
+            "derivative2": (x) => {
+            },
+            "range": [-5, 5]
+        },
+        "ridge": {
+            "function": (x) => {
+                return -(Math.pow(x, 3) - 3.125 * x * x - 3.5 * x + 2.458)
+            },
+            "derivative": (x) => {
+                return -(3 * x * x - 6.25 * x - 3.5)
+            },
+            "derivative2": (x) => {
+                return -(6 * x - 6.25)
+            },
+            "range": [-3, 6]
+        },
+        "sin": {
+            "function": (x) => {
+                return 2 * x * Math.sin(2) + Math.sin(x * Math.cos(2)) - Math.cos(x * Math.cos(2) - 6 * Math.sin(x * Math.sin(2)))
+            }
+            ,
+            "derivative": (x) => {
+                return -6 * Math.sin(2) * Math.cos(Math.sin(2) * x) * Math.sin(Math.cos(2) * x - 6 * Math.sin(Math.sin(2) * x)) + Math.cos(2) * Math.sin(Math.cos(2) * x - 6 * Math.sin(Math.sin(2) * x)) + Math.cos(2) * Math.cos(Math.cos(2) * x) + 2 * Math.sin(2)
+            },
+            "derivative2": (x) => {
+                return 6 * Math.sin(2) * Math.sin(2) * Math.sin(Math.sin(2) * x) * Math.sin(Math.cos(2) * x - 6 * Math.sin(Math.sin(2) * x)) + (36 * Math.sin(2) * Math.sin(2) * Math.cos(Math.sin(2) * x) * Math.cos(Math.sin(2) * x) - 12 * Math.cos(2) * Math.sin(2) * Math.cos(Math.sin(2) * x)) * Math.cos(Math.cos(2) * x - 6 * Math.sin(Math.sin(2) * x)) + Math.cos(2) * Math.cos(2) * Math.cos(Math.cos(2) * x - 6 * Math.sin(Math.sin(2) * x)) - Math.cos(2) * Math.cos(2) * Math.sin(Math.cos(2) * x)
+            },
+            "range": [-5, 5]
+        },
+        "cos": {
+            "function": (x) => {
+                return Math.cos(x) * x + 1
+            }
+            ,
+            "derivative": (x) => {
+                return Math.cos(x) - x * Math.sin(x)
+            },
+            "derivative2": (x) => {
+                return -2 * Math.sin(x) - x * Math.cos(x)
+            },
+            "range": [-10, 10]
+        },
+        "cossin": {
+            "function": (x) => {
+                return 3 * Math.cos(2 * x) + 4 * Math.sin(x) - 2 * Math.cos(8 * x) + 0.5 * Math.cos(x)
+            }
+            ,
+            "derivative": (x) => {
+                return 16 * Math.sin(8 * x) - 6 * Math.sin(2 * x) - (Math.sin(x)) / 2 + 4 * Math.cos(x)
+            },
+            "derivative2": (x) => {
+                return 128 * Math.cos(8 * x) - 12 * Math.cos(2 * x) - 4 * Math.sin(x) - (Math.cos(x)) / 2
+            },
+            "range": [-1, 4]
+        },
+    }
+    let f
+    drawChart("none")
+
+    function calculate() {
+        document.getElementById("info").innerHTML = ""
+        let a = document.getElementById("a").value * 1
+        let b = document.getElementById("b").value * 1
+        let accuracy = document.getElementById("accuracy").value
+        if (a >= b) {
+            alert("Неверно задан интервал")
+            document.getElementById("res").innerHTML = ""
+            return
+        }
+        if (!root(a, b, f["function"])) {
+            alert("На данном интервале функция не имеет корней")
+            document.getElementById("res").innerHTML = ""
+            return
+        }
+        if (hasMoreThat1Root(a, b)) {
+            alert("На данном интервале функция имеет несколько корней")
+            document.getElementById("res").innerHTML = ""
+            return
+        }
+        switch (document.getElementById("method-select").value) {
+            case "1":
+                chordMethod(a, b, accuracy)
+                break
+            case "2":
+                newtonMethod(a, b, accuracy)
+                break
+
+            case "3":
+                simpleIterationMethod(a, b, accuracy)
+                break
+        }
+    }
+
+    function start(name) {
+        drawChart(name)
+        document.getElementById("info").innerHTML = ""
+        document.getElementById("res").innerHTML = ""
+        document.getElementById("options").innerHTML = "Введите интервал<br>(<input id='a' type='number' class='interval' autocomplete='off'>; <input id='b' type='number' class='interval' autocomplete='off'>)<br><button onclick='calculate()'>Рассчитать</button>"
+    }
+
+    function drawChart(name) {
+        f = functions[name]
+        let XY = []
+        let D = []
+        let D2 = []
+        let mx = Number.MIN_VALUE
+        let mn = Number.MAX_VALUE
+        for (let i = f["range"][0]; i <= f["range"][1]; i += Math.abs(f["range"][0] - f["range"][1]) / 1000) {
+            mx = Math.max(mx, f["function"](i))
+            mn = Math.min(mn, f["function"](i))
+        }
+        let data = {
+            series: [{
+                data: [
+                    {x: -0.0000001, y: mx},
+                    {x: 0, y: mn}
+                ]
+            },
+                {
+                    data: [
+                        {x: f["range"][0], y: 0},
+                        {x: f["range"][1], y: 0}
+                    ]
+                },
+                XY, D2, D]
+        }
+        for (let i = f["range"][0]; i <= f["range"][1]; i += 0.01) {
+            XY.push({x: i, y: f["function"](i)})
+        }
+        // for (let i = f["range"][0]; i <= f["range"][1]; i += 0.01) {
+        //     D2.push({x: i, y: f["derivative2"](i)})
+        // }
+        // for (let i = f["range"][0]; i <= f["range"][1]; i += 0.01) {
+        //     D.push({x: i, y: f["derivative"](i)})
+        // }
+
+        let options = {
+            showLine: true,
+            axisX: {
+                // Настройка оси X
+                type: Chartist.AutoScaleAxis,
+                onlyInteger: true
+            },
+            axisY: {
+                // Настройка оси Y
+                type: Chartist.AutoScaleAxis,
+                onlyInteger: true
+            },
+            showPoint: false
+        };
+
+        new Chartist.Line('.ct-chart', data, options);
+    }
+</script>
+<script type="text/javascript" src="methods.js"></script>
+</body>
+</html>
