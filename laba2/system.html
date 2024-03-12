@@ -32,12 +32,11 @@
 <label for="1">{x ^ 2 + cos(y) = 1; y = x ^ 4}</label><br>
 <input type="radio" id="2" name="system" value="box&cos" onclick="drawChart(this.value)">
 <label for="2">{y = cos(x) - x; (x + 1) ^ 2 + y ^ 10 = 3)}</label><br>
-<!--<input type="radio" id="3" name="system" value="omg" onclick="drawChart(this.value)">-->
-<!--<label for="3">{cos(4 * (x * cos(6.8) - y * sin(6.8)) * x * sin(6.8) - 4y * cos(6.8)) = x * cos(6.8) - y * sin(6.8); x + y = xy}</label><br>-->
+<input type="radio" id="3" name="system" value="omg" onclick="drawChart(this.value)">
+<label for="3">{cos(4 * (x * cos(6.8) - y * sin(6.8)) * x * sin(6.8) - 4y * cos(6.8)) = x * cos(6.8) - y * sin(6.8); x +
+    y = xy}</label><br>
 <input type="radio" id="4" name="system" value="loops" onclick="drawChart(this.value)">
 <label for="4">{x ^ 3 + y ^ 2 = 4; xy = cos(x)}</label><br>
-<input type="radio" id="5" name="system" value="waves" onclick="drawChart(this.value)">
-<label for="5">{cos(x * cos(1) + y * sin(1)) = y * cos(1); sinh(3x) = cosh(y * sinh(x)) - sin(8x)}</label><br>
 
 <div>Точность: <input id="accuracy" type="number" value="0.001"></div>
 Введите начальные приближения: {<input id='x' type='number' class='interval' value="0" autocomplete="off">; <input
@@ -105,7 +104,7 @@
             "derivative2Y": (x, y) => {
                 return 10 * Math.pow(y, 9)
             }
-        }, "omg": {
+        }, "omg": { // та самая  функция на которой метод Ньютона выдает странные результаты
             "stringFunction1": "\\cos\\left(4\\left(x\\cdot\\cos(6.8)-y\\cdot\\sin(6.8)\\right)x\\sin\\left(6.8\\right)-4y\\cos\\left(6.8\\right)\\right)=x\\cdot\\cos(6.8)-y\\cdot\\sin(6.8)",
             "function1": (x, y) => {
                 return (Math.cos(4 * Math.sin(34 / 5) * x * (Math.cos(34 / 5) * x - y * Math.sin(34 / 5)) - 4 * y * Math.cos(34 / 5)) - (Math.cos(34 / 5) * x - y * Math.sin(34 / 5)))
@@ -147,28 +146,7 @@
             "derivative2Y": (x, y) => {
                 return x
             }
-        }, "waves": {
-            "stringFunction1": "\\cos(x\\cos(1)+y\\sin(1))=y\\cos(1)",
-            "function1": (x, y) => {
-                return Math.cos(x * Math.cos(1) + y * Math.sin(1)) - y * Math.cos(1)
-            },
-            "derivative1X": (x, y) => {
-                return -Math.cos(1) * Math.sin(Math.cos(1) * x + y * Math.sin(1))
-            },
-            "derivative1Y": (x, y) => {
-                return -Math.sin(1) * Math.sin(Math.sin(1) * y + x * Math.cos(1)) - Math.cos(1)
-            },
-            "stringFunction2": "\\sinh\\left(3x\\right)=\\cosh\\left(y\\sinh x\\right)-\\sin\\left(8x\\right)",
-            "function2": (x, y) => {
-                return Math.sinh(3 * x) - Math.cosh(y * Math.sinh(x)) + Math.sin(8 * x)
-            },
-            "derivative2X": (x, y) => {
-                return 3 * Math.cosh(3 * x) - (y * Math.cosh(x) * Math.sinh(y * Math.sinh(x)) - 8 * Math.cos(8 * x))
-            },
-            "derivative2Y": (x, y) => {
-                return -(Math.sinh(x) * Math.sinh(Math.sinh(x) * y))
-            }
-        },
+        }
     }
     let f = functions["none"]
 

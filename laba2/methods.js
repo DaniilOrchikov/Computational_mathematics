@@ -9,7 +9,7 @@ function chordMethod(a, b, accuracy) {
             x = x0 - (b - x0) / (fb - fx0) * fx0
             let fx = f["function"](x)
             document.getElementById("res").innerHTML += `<tr><td>${v}</td><td>${x0}</td><td>${b}</td><td>${x}</td><td>${fx0}</td><td>${fb}</td><td>${fx}</td><td>${Math.abs(x0 - x)}</td></tr>`
-            if (Math.abs(x0 - x) < accuracy) return
+            if (Math.abs(x0 - x) < accuracy && Math.abs(fx) < accuracy) return
             v++
             x0 = x
             if (v > 100) {
@@ -30,7 +30,7 @@ function chordMethod(a, b, accuracy) {
             x = x0 - (a - x0) / (fa - fx0) * fx0
             let fx = f["function"](x)
             document.getElementById("res").innerHTML += `<tr><td>${v}</td><td>${a}</td><td>${x0}</td><td>${x}</td><td>${fa}</td><td>${fx0}</td><td>${fx}</td><td>${Math.abs(x0 - x)}</td></tr>`
-            if (Math.abs(x0 - x) < accuracy) return
+            if (Math.abs(x0 - x) < accuracy && Math.abs(fx) < accuracy) return
             v++
             x0 = x
             if (v > 100) {
@@ -48,12 +48,13 @@ function chordMethod(a, b, accuracy) {
     if (f["derivative"]((a + b) / 2) * f["derivative2"]((a + b) / 2) > 0) {
         runA()
     }
-    if (f["derivative"]((a + b) / 2) * f["derivative2"]((a + b) / 2) < 0 || a > x || b < x) {
+    if (f["derivative"]((a + b) / 2) * f["derivative2"]((a + b) / 2) <= 0 || a > x || b < x) {
         runB()
     }
     if (a > x || b < x) {
         runA()
     }
+    console.log(123)
 }
 
 function newtonMethod(a, b, accuracy) {
@@ -107,7 +108,7 @@ function simpleIterationMethod(a, b, accuracy) {
             v++
             x0 = x
             if (v > 100) {
-                document.getElementById("info").innerHTML += "<br>Не удалось добиться нужной точности за вменяемое количество итераций. Метод расходится"
+                document.getElementById("info").innerHTML += "<br>Не удалось добиться нужной точности за вменяемое количество итераций. "
                 return
             }
         }
@@ -117,12 +118,19 @@ function simpleIterationMethod(a, b, accuracy) {
         alert("На заданном интервале применение метода простых итераций может дать некорректный результат")
     }
     let mx = Number.MIN_VALUE
+    let mxi = 0;
     for (let i = a; i <= b; i += Math.abs(a - b) / 100)
-        if (mx < Math.abs(f["derivative"](i)))
+        if (mx < Math.abs(f["derivative"](i))) {
             mx = Math.abs(f["derivative"](i))
+            mxi = i;
+        }
+    if (mx < Math.abs(f["derivative"](b))){
+        mx = Math.abs(f["derivative"](b))
+        mxi = b;
+    }
     let lambda = 1 / mx
-    lambda *= f["derivative"](mx) > 0 ? -1 : 1
-    document.getElementById("info").innerHTML = "Достаточное условие" + (lambda * f["derivative"](mx) + 1 < 1 ? " " : " не ") + "выполняется"
+    lambda *= f["derivative"](mxi) > 0 || f["derivative"](a) > 0 || f["derivative"](b) > 0 ? -1 : 1
+    document.getElementById("info").innerHTML = "Достаточное условие" + (Math.abs(lambda * f["derivative"](mxi) + 1) < 1 && Math.abs(lambda * f["derivative"](a) + 1) < 1 && Math.abs(lambda * f["derivative"](b) + 1) < 1 ? " " : " не ") + "выполняется " + "fi'(a)=" + (lambda * f["derivative"](a) + 1) + "; fi'(a)=" + (lambda * f["derivative"](b) + 1) + "; lambda=" + lambda + "; mx=" + mxi
     console.log(lambda * f["derivative"](mx) + 1)
     let x
     run()
@@ -130,7 +138,7 @@ function simpleIterationMethod(a, b, accuracy) {
         document.getElementById("res").innerHTML = "<tr><th>№ Шага</th><th>x_i</th><th>x_{i+1}</th><th>phi(x_{i + 1})</th><th>f(x_{k+1})</th><th>|x_k - x_{k+1}|</th></tr>"
         lambda *= -1
         console.log(lambda * f["derivative"](mx) + 1)
-        document.getElementById("info").innerHTML = "Достаточное условие" + (lambda * f["derivative"](mx) + 1 < 1 ? " " : " не ") + "выполняется"
+        document.getElementById("info").innerHTML = "Достаточное условие" + (Math.abs(lambda * f["derivative"](mxi) + 1) < 1 && Math.abs(lambda * f["derivative"](a) + 1) < 1 && Math.abs(lambda * f["derivative"](b) + 1) < 1 ? " " : " не ") + "выполняется " + "fi'(a)=" + (lambda * f["derivative"](a) + 1) + "; fi'(a)=" + (lambda * f["derivative"](b) + 1) + "; lambda=" + lambda + "; mx=" + mxi
         run()
     }
 }
@@ -181,9 +189,9 @@ function systemNewtonMethod(x0, y0, accuracy) {
         let d2 = a11 * b2 - a21 * b1
         let dx = d1 / d
         let dy = d2 / d
-        document.getElementById("res").innerHTML += `<tr><td>${v}</td><td>${x0}</td><td>${y0}</td><td>${Math.abs(dx)}</td><td>${Math.abs(dy)}</td></tr>`
         x = x0 + dx
         y = y0 + dy
+        document.getElementById("res").innerHTML += `<tr><td>${v}</td><td>${x}</td><td>${y}</td><td>${Math.abs(dx)}</td><td>${Math.abs(dy)}</td></tr>`
         if (Math.abs(dx) <= accuracy && Math.abs(dy) <= accuracy) {
             break
         }
