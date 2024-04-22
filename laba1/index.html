@@ -122,7 +122,7 @@
         document.getElementById("maximum_number_of_iterations").value = text[2]
         let m = ""
         for (let i = 0; i < n; i++) {
-            m += `<input type='number' class='cell' value='${text[3].split(" ")[i]}' onfocusin='cellClickIn(this)' onfocusout='cellClickOut(this)'>`
+            m += `<input type='number' step='0.01' class='cell' value='${text[3].split(" ")[i]}' onfocusin='cellClickIn(this)' onfocusout='cellClickOut(this)'>`
         }
         document.getElementById("init_approx").innerHTML = m
         matrix = []
@@ -144,7 +144,7 @@
         printMatrix()
         let m = ""
         for (let i = 0; i < n; i++) {
-            m += "<input type='number' class='cell' value='0' onfocusin='cellClickIn(this)' onfocusout='cellClickOut(this)'>"
+            m += "<input type='number' step='0.01'  class='cell' value='0' onfocusin='cellClickIn(this)' onfocusout='cellClickOut(this)'>"
         }
         document.getElementById("init_approx").innerHTML = m
     }
@@ -155,9 +155,9 @@
         for (let i = 0; i < n; i++) {
             m += "<div class='row'>"
             for (let j = 0; j < n; j++) {
-                m += `<input type='number' class='cell' value='${matrix[i][j]}' onfocusin='cellClickIn(this)' onfocusout='cellClickOut(this)'>`
+                m += `<input type='number' step="0.01" class='cell' value='${matrix[i][j]}' onfocusin='cellClickIn(this)' onfocusout='cellClickOut(this)'>`
             }
-            m += `<input type='number' class='cell right_part' value='${right_parts[i]}' onfocusin='cellClickIn(this)' onfocusout='cellClickOut(this)'></div>`
+            m += `<input type='number' step="0.01" class='cell right_part' value='${right_parts[i]}' onfocusin='cellClickIn(this)' onfocusout='cellClickOut(this)'></div>`
         }
         document.getElementById("matrix").innerHTML = m
         clear()
@@ -182,10 +182,10 @@
         right_parts = []
         rows.forEach(row => {
             let rowValues = []
-            right_parts.push(parseInt(row.getElementsByClassName("right_part")[0].value, 10))
+            right_parts.push(parseFloat(row.getElementsByClassName("right_part")[0].value))
             let inputs = row.querySelectorAll(':not(.right_part)')
             inputs.forEach(input => {
-                rowValues.push(parseInt(input.value, 10))
+                rowValues.push(parseFloat(input.value))
             });
             matrix.push(rowValues)
         })
@@ -245,7 +245,7 @@
         printMatrix()
         let m = ""
         for (let i = 0; i < n; i++) {
-            m += "<input type='number' class='cell' value='0' onfocusin='cellClickIn(this)' onfocusout='cellClickOut(this)'>"
+            m += "<input type='number' step='0.01' class='cell' value='0' onfocusin='cellClickIn(this)' onfocusout='cellClickOut(this)'>"
         }
         document.getElementById("init_approx").innerHTML = m
     }

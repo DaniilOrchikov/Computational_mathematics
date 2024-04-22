@@ -63,25 +63,25 @@
             "stringFunction2": "",
         },
         "cosx^4": {
-            "stringFunction1": "x^2+\\cos(y)=1",
+            "stringFunction1": "5x-y^2=-4",
             "function1": (x, y) => {
-                return x * x + Math.cos(y) - 1
+                return 5 * x - y * y + 4
             },
             "derivative1X": (x, y) => {
-                return 2 * x
+                return 5
             },
             "derivative1Y": (x, y) => {
-                return -Math.sin(y)
+                return -2 * y
             },
-            "stringFunction2": "x^4=y",
+            "stringFunction2": "x ^ 2 + 7 * y ^ 2=8",
             "function2": (x, y) => {
-                return Math.pow(x, 4) - y
+                return x * x + 7 * y * y - 8
             },
             "derivative2X": (x, y) => {
-                return 4 * Math.pow(x, 3)
+                return 2 * x
             },
             "derivative2Y": (x, y) => {
-                return -1
+                return 14 * y
             }
         }, "box&cos": {
             "stringFunction1": "y=\\cos(x)-x",

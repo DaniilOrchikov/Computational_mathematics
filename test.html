@@ -3,17 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <title>График Desmos</title>
-    <script src="https://www.desmos.com/api/v1.8/calculator.js?apiKey=dcb31709b452b1cf9dc26972add0fda6"></script>
+    <style>
+        .x{
+            display: flex;
+        }
+        @media (max-width: 1000px){
+            .x{
+                display: block;
+            }
+        }
+    </style>
 </head>
 <body>
 
-<div id="calculator" style="width: 600px; height: 400px;"></div>
-
-<script>
-    var elt = document.getElementById('calculator');
-    var calculator = Desmos.GraphingCalculator(elt);
-    calculator.setExpression({ id: 'graph1', latex: 'x^2+\\cos(y)=1' });
-</script>
-
+<div class="x">
+    <div style="width:30%; height: 300px;background-color: red"></div>
+    <div style="width: 70% ; height: 400px; background-color: blue"></div>
+</div>
 </body>
+
 </html>

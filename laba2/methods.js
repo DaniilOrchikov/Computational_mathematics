@@ -189,6 +189,7 @@ function systemNewtonMethod(x0, y0, accuracy) {
         let d2 = a11 * b2 - a21 * b1
         let dx = d1 / d
         let dy = d2 / d
+        console.log(dx, dy)
         x = x0 + dx
         y = y0 + dy
         document.getElementById("res").innerHTML += `<tr><td>${v}</td><td>${x}</td><td>${y}</td><td>${Math.abs(dx)}</td><td>${Math.abs(dy)}</td></tr>`

@@ -127,6 +127,7 @@ function calc() {
             break
         }
         x_n = [...x_n1]
+        console.log(x_n)
         x_n1 = new Array(n)
     }
     // -----
