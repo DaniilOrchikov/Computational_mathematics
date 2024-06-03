@@ -3,6 +3,8 @@
 <head>
     <meta charset="utf-8">
     <script src="https://www.desmos.com/api/v1.8/calculator.js?apiKey=dcb31709b452b1cf9dc26972add0fda6"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/9.5.2/math.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjs-simple-integral@0.1.1/index.min.js"></script>
     <title>Интегралы</title>
     <style>
         * {
@@ -25,6 +27,8 @@
         <label for="f2">sin(x) + 2cos(0.1x ^ 2) + 1</label><br>
         <input type="radio" id="f3" name="function" value="x^2" onclick="drawChart(this.value)">
         <label for="f3">x ^ 2 + 2 * x - 5</label><br>
+        <input type="radio" id="f4" name="function" value="lab" onclick="drawChart(this.value)">
+        <label for="f4">1/x</label><br>
     </div>
     <div style="margin:0 50px 0 0;">
         Выберете интервал:<br>
@@ -51,7 +55,7 @@
         <div id="result"></div>
     </div>
 </div>
-<div id="calculator" style="width: 90%; height: 600px; margin-left: 4%"></div>
+<div id="calculator" style="width: 90%; height: 790px; margin-left: 4%"></div>
 </body>
 <script>
     let elt = document.getElementById('calculator')
@@ -75,6 +79,12 @@
                 return x * x + 2 * x - 5
             },
             name: "x ^ 2 + 2 * x - 5"
+        },
+        "lab": {
+            function: (x) => {
+                return 1/ x
+            },
+            name: "1/x"
         }
     }
 
@@ -87,7 +97,14 @@
         let method = document.querySelector('input[name="method"]:checked').value;
         let fun = functions[document.querySelector('input[name="function"]:checked').value].function;
         let accuracy = document.getElementById("accuracy").value * 1
-        let res = calc(fun, document.getElementById("a").value * 1, document.getElementById("b").value * 1, accuracy, method)
+        let a = document.getElementById("a").value * 1
+        let b = document.getElementById("b").value * 1
+        if ((fun(a) === Infinity) || (fun (b) === Infinity)) {
+            document.getElementById("result").innerHTML = "Интеграл расходится"
+            return
+        }
+        let res = calc(fun, Math.min(a, b), Math.max(a, b), accuracy, method)
+        if (document.getElementById("a").value * 1 > document.getElementById("b").value * 1) res.res *= -1
         document.getElementById("result").innerHTML = `Ответ: ${res.res}<br>Число разбиений: ${res.intervals}`
     }
 
@@ -96,44 +113,45 @@
         let a = document.getElementById("a").value * 1
         let b = document.getElementById("b").value * 1
         let h = Math.min(0.25, Math.abs(b - a) / 4)
-        calculator.setExpression({id: 'graph4', latex: ""});
+        calculator.setExpression({id: 'graph2', latex: `\\int_{${a}}^{${b}}f\\left(x\\right)dx`});
+        calculator.setExpression({id: 'graph5', latex: ""});
         switch (method) {
             case "left":
-                calculator.setExpression({id: 'graph2', latex: `A=[${a},${a + h},...,${b - h}]`});
+                calculator.setExpression({id: 'graph3', latex: `A=[${a},${a + h},...,${b - h}]`});
                 calculator.setExpression({
-                    id: 'graph3',
+                    id: 'graph4',
                     latex: `[\\polygon((x,0),(x,f(x)),(x+${h},f(x)),(x+${h},0)) \\for x = A]`
                 });
                 break
             case "right":
-                calculator.setExpression({id: 'graph2', latex: `A=[${a + h},${a + 2 * h},...,${b}]`});
+                calculator.setExpression({id: 'graph3', latex: `A=[${a + h},${a + 2 * h},...,${b}]`});
                 calculator.setExpression({
-                    id: 'graph3',
+                    id: 'graph4',
                     latex: `[\\polygon((x - ${h},0),(x-${h},f(x)),(x,f(x)),(x,0)) \\for x = A]`
                 });
                 break
             case "middle":
-                calculator.setExpression({id: 'graph2', latex: `A=[${a + h / 2},${a + h / 2 + h},...,${b - h / 2}]`});
+                calculator.setExpression({id: 'graph3', latex: `A=[${a + h / 2},${a + h / 2 + h},...,${b - h / 2}]`});
                 calculator.setExpression({
-                    id: 'graph3',
+                    id: 'graph4',
                     latex: `[\\polygon((x - ${h / 2},0),(x-${h / 2},f(x)),(x + ${h / 2},f(x)),(x + ${h / 2},0)) \\for x = A]`
                 });
                 break
             case "trapezoid":
-                calculator.setExpression({id: 'graph2', latex: `A=[${a},${a + h},...,${b - h}]`});
+                calculator.setExpression({id: 'graph3', latex: `A=[${a},${a + h},...,${b - h}]`});
                 calculator.setExpression({
-                    id: 'graph3',
+                    id: 'graph4',
                     latex: `[\\polygon((x,0),(x,f(x)),(x+${h},f(x+${h})),(x+${h},0)) \\for x = A]`
                 });
                 break
             case "Simpson":
-                calculator.setExpression({id: 'graph2', latex: `A=[${a + h},${a + 3 * h},...,${b - h}]`});
+                calculator.setExpression({id: 'graph3', latex: `A=[${a + h},${a + 3 * h},...,${b - h}]`});
                 calculator.setExpression({
-                    id: 'graph3',
+                    id: 'graph4',
                     latex: `\\min\\left(0.5(${1 / h / h})\\left(x-A\\right)\\left(x-A-${h}\\right)f\\left(A-${h}\\right)-(${1 / h / h})\\left(x-A+${h}\\right)\\left(x-A-${h}\\right)f\\left(A\\right)+0.5(${1 / h / h})\\left(x-A+${h}\\right)\\left(x-A\\right)f\\left(A+${h}\\right),0\\right)\\le y\\le\\max\\left(0.5(${1 / h / h})\\left(x-A\\right)\\left(x-A-${h}\\right)f\\left(A-${h}\\right)-(${1 / h / h})\\left(x-A+${h}\\right)\\left(x-A-${h}\\right)f\\left(A\\right)+0.5(${1 / h / h})\\left(x-A+${h}\\right)\\left(x-A\\right)f\\left(A+${h}\\right),0\\right)\\left\\{A-${h}\\le x\\le A+${h}\\right\\}`
                 });
                 calculator.setExpression({
-                    id: 'graph4',
+                    id: 'graph5',
                     latex: `x=A-${h}\\left\\{\\min\\left(f\\left(A-${h}\\right),0\\right)<y<\\max\\left(f\\left(A-${h}\\right),0\\right)\\right\\}`
                 });
                 break

@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8">
+    <script src="https://www.desmos.com/api/v1.8/calculator.js?apiKey=dcb31709b452b1cf9dc26972add0fda6"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/9.5.2/math.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjs-simple-integral@0.1.1/index.min.js"></script>
+    <title>Интегралы</title>
+    <style>
+        * {
+            font-size: 1.1rem;
+            margin: 3px;
+        }
+
+        input[type="number"] {
+            width: 100px;
+        }
+
+        table {
+            border-collapse: collapse;
+            text-align: center;
+            margin-bottom: 10px;
+            border: 1px solid black;
+        }
+
+        td {
+            text-align: left;
+            padding: 5px;
+            border: 3px solid black;
+        }
+
+        th {
+            text-align: center;
+            padding: 5px;
+            border: 3px solid black;
+        }
+    </style>
+</head>
+<body>
+<div style="display: flex; align-items: center">
+    <div>
+        <input type="file" id="file" accept=".txt" oninput="readFile()"><br>
+        <label>
+            Введите точки<br>
+            <textarea id="points" style="resize: none; height: 400px" oninput="update_points()"></textarea>
+        </label>
+        <p id="res" style="width: 400px"></p>
+    </div>
+    <div id="calculator" style="width: 70%; height: 700px; margin-left: 4%"></div>
+</div>
+<div>
+    Линейная аппроксимация
+    <table id="t_1">
+        <thead></thead>
+        <tbody></tbody>
+    </table>
+    <p id="r"></p>
+    Квадратичная аппроксимация
+    <table id="t_2">
+        <thead></thead>
+        <tbody></tbody>
+    </table>
+    Аппроксимация полиномом 3 степени
+    <table id="t_3">
+        <thead></thead>
+        <tbody></tbody>
+    </table>
+    Аппроксимация полиномом 4 степени
+    <table id="t_4">
+        <thead></thead>
+        <tbody></tbody>
+    </table>
+    Аппроксимация экспоненциальной функцией
+    <table id="t_e">
+        <thead></thead>
+        <tbody></tbody>
+    </table>
+    Аппроксимация логарифмической функцией
+    <table id="t_log">
+        <thead></thead>
+        <tbody></tbody>
+    </table>
+    Аппроксимация степенной функцией
+    <table id="t_power">
+        <thead></thead>
+        <tbody></tbody>
+    </table>
+</div>
+</body>
+<script>
+    let elt = document.getElementById('calculator')
+    let calculator = Desmos.GraphingCalculator(elt)
+    calculator.setExpression({id: 'functions', hidden: true})
+    let XY, n
+
+    function update_points() {
+        XY = document.getElementById("points").value.split("\n").map((x) => x.replaceAll(/\s$/g, "")).map((x) => x.split(" ").filter(x => x !== "").map(x => x * 1)).filter(x => x.length === 2).filter(x => !isNaN(x[0]) && !isNaN(x[1]))
+        n = XY.length
+        calculator.setExpression({id: 'graph1', latex: `(${XY.map(x=>getting_rid_of_scientific_notation(x)).map(x => x.join(",")).join("),(")})`})
+        document.getElementById("res").innerHTML = ""
+        let deltas = []
+        let functions = []
+
+        let res_f = polynomial(1)
+        functions.push(res_f[0].map(x => Math.round(x * 1000) / 1000))
+        deltas.push(Math.sqrt(res_f[1] / n))
+        let xs = 0, ys = 0
+        XY.forEach(x => {
+            xs += x[0]
+            ys += x[1]
+        })
+        xs /= n
+        ys /= n
+        let xsxysy = 0
+        let xsxx = 0, ysyy = 0
+        XY.forEach(x => {
+            xsxysy += (x[0] - xs) * (x[1] - ys)
+            xsxx += (x[0] - xs) ** 2
+            ysyy += (x[1] - ys) ** 2
+        })
+        document.getElementById("r").innerHTML = `r = ${xsxysy / Math.sqrt(xsxx * ysyy)}`
+
+        res_f = polynomial(2)
+        functions.push(res_f[0].map(x => Math.round(x * 1000) / 1000))
+        deltas.push(Math.sqrt(res_f[1] / n))
+
+        res_f = polynomial(3)
+        functions.push(res_f[0].map(x => Math.round(x * 1000) / 1000))
+        deltas.push(Math.sqrt(res_f[1] / n))
+
+        res_f = polynomial(4)
+        functions.push(res_f[0].map(x => Math.round(x * 1000) / 1000))
+        deltas.push(Math.sqrt(res_f[1] / n))
+
+        res_f = exponential()
+        functions.push(res_f[0].map(x => Math.round(x * 1000) / 1000))
+        deltas.push(Math.sqrt(res_f[1] / n))
+
+        res_f = logarithmic()
+        functions.push(res_f[0].map(x => Math.round(x * 1000) / 1000))
+        deltas.push(Math.sqrt(res_f[1] / n))
+
+        res_f = power()
+        functions.push(res_f[0].map(x => Math.round(x * 1000) / 1000))
+        deltas.push(Math.sqrt(res_f[1] / n))
+
+        console.log(deltas)
+        let mn_delta = Math.min.apply(null, deltas.filter(x => !isNaN(x)))
+        let res = document.getElementById("res")
+        res.innerHTML += "<br>Наилучшее приближение:<br>"
+        if (mn_delta === deltas[0])
+            res.innerHTML += `линейное<br>f(x) = ${functions[0][1]} * x + ${functions[0][0]}<br>`
+        if (mn_delta === deltas[1])
+            res.innerHTML += `квадратичное<br>f(x) = ${functions[1][2]} * x^2 + ${functions[1][1]} * x + ${functions[1][0]}<br>`
+        if (mn_delta === deltas[2])
+            res.innerHTML += `полином 3 степени<br>f(x) = ${functions[2][3]} * x^3 + ${functions[2][2]} * x^2 + ${functions[2][1]} * x + ${functions[2][0]}<br>`
+        if (mn_delta === deltas[3])
+            res.innerHTML += `полином 4 степени<br>f(x) = ${functions[3][4]} * x^4 + ${functions[3][3]} * x^3 + ${functions[3][2]} * x^2 + ${functions[3][1]} * x + ${functions[3][0]}<br>`
+        if (mn_delta === deltas[4])
+            res.innerHTML += `экспоненциальное<br>f(x) = ${functions[4][1]} * exp(${functions[4][0]} * x)<br>`
+        if (mn_delta === deltas[5])
+            res.innerHTML += `логарифмическое<br>f(x) = ${functions[5][1]} * log(x) + ${functions[5][0]}<br>`
+        if (mn_delta === deltas[6])
+            res.innerHTML += `степенное<br>f(x) = ${functions[6][0]} * x^(${functions[6][1]})<br>`
+
+    }
+
+    function readFile() {
+        const fileInput = document.getElementById('file');
+        const file = fileInput.files[0];
+
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                document.getElementById("points").value = e.target.result
+                update_points()
+            };
+            reader.readAsText(file);
+            fileInput.value = ""
+        }
+    }
+
+    function draw_table(name, latex_fun) {
+        let table_h = document.querySelector(`#t_${name} thead`)
+        let table_b = document.querySelector(`#t_${name} tbody`)
+        let t_h = '', t_b = ''
+        t_h = "<tr><th>№</th>"
+        t_b = "<tr>"
+        for (let i = 0; i < n; i++) {
+            t_h += `<th>${i}</th>`
+        }
+        t_b += `<th>X</th>`
+        XY.forEach(x => t_b += `<th>${x[0]}</th>`)
+        t_b += "</tr><tr>"
+        t_b += `<th>Y</th>`
+        XY.forEach(x => t_b += `<th>${x[1]}</th>`)
+        t_b += "</tr><tr>"
+        t_b += `<th>P_${name}</th>`
+        XY.forEach(x => t_b += `<th>${Math.round(eval(latex_fun.replaceAll("x", `(${x[0]})`)) * 10000) / 10000}</th>`)
+        t_b += "</tr><tr>"
+        t_b += `<th>E_i</th>`
+        XY.forEach(x => t_b += `<th>${Math.round((eval(latex_fun.replaceAll("x", `(${x[0]})`)) - x[1]) * 10000) / 10000}</th>`)
+        t_b += "</tr>"
+        t_h += "</tr>"
+        table_h.innerHTML = t_h
+        table_b.innerHTML = t_b
+    }
+
+    function getting_rid_of_scientific_notation(coeffs) {
+        let w = []
+        for (let i = 0; i < coeffs.length; i++) {
+            let w_i = coeffs[i].toString()
+            let parts = w_i.split('e')
+            if (parts.length > 1)
+                w.push(`${parts[0]}*10^{${parts[1]}}`)
+            else
+                w.push(`${parts[0]}`)
+        }
+        return w
+    }
+</script>
+<script src="methods.js"></script>
+</html>

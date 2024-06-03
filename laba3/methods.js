@@ -29,7 +29,6 @@ function calc(fun, a, b, accuracy, method) {
         }
         return I * h
     }
-
     let k = 4
     let Ik, Ik1
     Ik = f()

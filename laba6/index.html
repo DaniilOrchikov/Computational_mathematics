@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Численные методы решения ОДУ</title>
+    <script src="https://www.desmos.com/api/v1.8/calculator.js?apiKey=dcb31709b452b1cf9dc26972add0fda6"></script>
+    <style>
+        * {
+            font-size: 1.1rem;
+            margin: 3px;
+        }
+
+        input[type="number"] {
+            width: 100px;
+        }
+
+        table {
+            border-collapse: collapse;
+            text-align: center;
+            margin-bottom: 10px;
+            border: 1px solid black;
+        }
+
+        td {
+            text-align: left;
+            padding: 5px;
+            border: 3px solid black;
+        }
+
+        th {
+            text-align: center;
+            padding: 5px;
+            border: 3px solid black;
+        }
+    </style>
+</head>
+<body>
+<div>
+    Выберете функцию<br>y' =
+    <select id="functions" onchange="draw()">
+        <option value="y + (1 + x) * y ** 2">y + (1 + x) * y^2</option>
+        <option value="sin(x) - x^3 + y">sin(x) - x^3 + y</option>
+        <option value="cos(x) * sin(x) * y">cos(x) * sin(x) * y</option>
+    </select><br>
+    Диапазон: x0 = <input style="width: 60px" type="number" id="x0" value="1">, xn =
+    <input style="width: 60px" type="number" id="b" value="5">
+    y(x0) = <input style="width: 60px" type="number" id="y0" value="-1">
+    Шаг = <input style="width: 60px" type="number" id="h" value="0.5" step="0.1">
+    ε = <input style="min-width: 60px" type="number" id="ε" value="0.01"><br>
+    <button onclick="calc()">Рассчитать</button>
+    <div id="calculator" style="height: 790px"></div>
+</div>
+<div style="display: flex; justify-content: left">
+    <div>
+        Метод Эйлера:
+        <table id="Euler">
+            <thead></thead>
+            <tbody></tbody>
+        </table>
+    </div>
+    <div>
+        Метод Рунге-Кутта:
+        <table id="Runge">
+            <thead></thead>
+            <tbody></tbody>
+        </table>
+    </div>
+    <div>
+        Метод Милна:
+        <table id="Milne">
+            <thead></thead>
+            <tbody></tbody>
+        </table>
+    </div>
+</div>
+</body>
+<script>
+    window.addEventListener("load", draw)
+
+    let functions = {
+        "y + (1 + x) * y ** 2": {
+            function: (x, y) => {
+                return y + (1 + x) * y ** 2
+            },
+            res: () => {
+                let c = -Math.exp(x0) / y0 - x0 * Math.exp(x0)
+                return `y=-(e^x)/(x*e^x+${isNaN(c) ? 0 : getting_rid_of_scientific_notation_no_arr(c)})`
+            }
+        },
+        "sin(x) - x^3 + y": {
+            function: (x, y) => {
+                return Math.sin(x) - x ** 3 + y
+            },
+            res: () => {
+                let c = -(-(Math.sin(x0)) / 2 - (Math.cos(x0)) / 2 + x0 ** 3 + 3 * x0 ** 2 + 6 * x0 + 6 - y0) / Math.exp(x0)
+                return `y=-(\\sin(x))/2-(\\cos(x))/2+${c}*e^x+x^3+3*x^2+6*x+6`
+            }
+        },
+        "cos(x) * sin(x) * y": {
+            function: (x, y) => {
+                return Math.cos(x) * Math.sin(x) * y
+            },
+            res: () => {
+                let c = y0 / Math.exp((Math.sin(x0) ** 2) / 2)
+                return `y=${c}*e^{\\sin^2(x)/2}`
+            }
+        }
+    }
+    let h, f, x0, y0 = functions["x^2+y"]
+    let elt = document.getElementById('calculator')
+    let calculator = Desmos.GraphingCalculator(elt)
+    calculator.setExpression({id: 'functions', hidden: true});
+
+    function calc() {
+        h = document.getElementById("h").value * 1
+        let b = document.getElementById("b").value * 1
+        x0 = document.getElementById("x0").value * 1
+        y0 = document.getElementById("y0").value * 1
+        f = functions[document.getElementById("functions").value].function
+        let epsilon = document.getElementById("ε").value * 1
+        draw(x0, y0)
+        draw_res(Euler(x0, y0, b, epsilon), "Euler")
+        draw_res(Runge_Kutta(x0, y0, b, epsilon), "Runge")
+        draw_res(Milne(x0, y0, b, epsilon), "Milne")
+    }
+
+    function draw() {
+        calculator.setExpression({
+            id: 'graph1',
+            latex: functions[document.getElementById("functions").value].res()
+        })
+    }
+
+    function getting_rid_of_scientific_notation_pair(pair) {
+        return [getting_rid_of_scientific_notation_no_arr(pair[0]), getting_rid_of_scientific_notation_no_arr(pair[1])]
+    }
+
+    function getting_rid_of_scientific_notation_no_arr(x) {
+        let w = x.toString()
+        let parts = w.split('e')
+        if (parts.length > 1)
+            return `${parts[0]}*10^{${parts[1]}}`
+        return `${parts[0]}`
+    }
+
+    function draw_res(res, id) {
+        let mn = Infinity
+        let mx = -Infinity
+        res.forEach(xy => {
+            mn = Math.min(mn, xy[0])
+            mx = Math.max(mx, xy[0])
+        })
+        let max_N = Math.ceil(mx - mn) * 7
+        if (res.length > max_N) {
+            let k = Math.floor(res.length / max_N)
+            res = res.filter((x, i) => {
+                return i % k === 0
+            })
+        }
+        calculator.setExpression({
+            id: 'graph' + id,
+            latex: `P_{${id}}=` + res.map(xy => getting_rid_of_scientific_notation_pair(xy)).map(xy => `(${xy[0]},${xy[1]})`).join(",")
+        })
+        let table_h = document.querySelector(`#${id} thead`)
+        let table_b = document.querySelector(`#${id} tbody`)
+        let t_h = "<tr><th>xi</th><th>yi</th></tr>"
+        let t_b = ""
+        res.forEach((xy, index) => t_b += `<tr><td>${Math.round(xy[0] * 10000) / 10000}</td><td>${xy[1]}</td></tr>`)
+        table_h.innerHTML = t_h
+        table_b.innerHTML = t_b
+    }
+</script>
+<script src="methods.js"></script>
+</html>
